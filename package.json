@@ -5,6 +5,9 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "dev": "bun --filter=web dev"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
