@@ -1,4 +1,5 @@
 import wethAbi from "../../abi/weth.json";
+import permit2Abi from "../../abi/permit2.json";
 import { privateKeyToAccount } from "viem/accounts";
 import { deployContract, getTransactionReceipt } from "wagmi/actions";
 import { config } from "../../wagmi.config";
@@ -11,6 +12,7 @@ const anvilAccount1 = privateKeyToAccount(
 );
 
 let weth: `0x${string}`;
+let permit2: `0x${string}`;
 
 async function deployOrUseCached() {
   console.log("Deploying contracts...");
@@ -22,18 +24,30 @@ async function deployOrUseCached() {
       account: anvilAccount1,
       chainId: anvil.id,
     });
-
     const receipt = await getTransactionReceipt(config, { hash: tx });
     if (!receipt.contractAddress) {
       throw new Error("Failed to deploy WETH");
     }
-
     weth = receipt.contractAddress;
-
     console.log("WETH deployed at", weth);
   }
 
-  return { weth };
+  if (!permit2) {
+    const tx = await deployContract(config, {
+      abi: permit2Abi,
+      bytecode: bytecodes.permit2,
+      account: anvilAccount1,
+      chainId: anvil.id,
+    });
+    const receipt = await getTransactionReceipt(config, { hash: tx });
+    if (!receipt.contractAddress) {
+      throw new Error("Failed to deploy Permit2");
+    }
+    permit2 = receipt.contractAddress;
+    console.log("Permit2 deployed at", permit2);
+  }
+
+  return { weth, permit2 };
 }
 
 export function useDemoContracts() {

@@ -15,6 +15,7 @@ import { Address, formatEther } from "viem";
 import { Hex } from "viem";
 import { toast } from "sonner";
 import { useErc20Balance } from "./hooks/use-erc20-balance";
+import { useErc20Approve } from "./hooks/use-erc20-approve";
 
 function ConnectButton() {
   const { disconnect } = useDisconnect();
@@ -59,6 +60,17 @@ function App() {
       refetchWethBalance();
     },
   });
+  const { mutate: approve } = useErc20Approve(
+    {
+      token: contracts?.weth,
+      spender: contracts?.permit2,
+    },
+    {
+      onSuccess: () => {
+        toast.success("Approved WETH");
+      },
+    }
+  );
 
   const displayConnection = address ? (
     `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -85,21 +97,40 @@ function App() {
         <div className="flex flex-col gap-10">
           <div>
             <h1 className="text-2xl font-bold">Permit2 Demo</h1>
-            <p>This is a simple demo of how to use Permit2 to transfer WETH.</p>
+            <p className="text-sm">
+              This is a simple demo of how to use Permit2 to transfer WETH.
+            </p>
           </div>
           <div className="flex flex-col gap-1">
-            <p className="text-sm flex gap-2 items-center">
-              Account: <span className="font-bold">{displayConnection}</span>
-            </p>
-            <p className="text-sm flex gap-2 items-center">
-              Balance: <span className="font-bold">{displayBalance}</span>
-            </p>
-            {!isSuccess && <p>Loading contracts...</p>}
-            {isSuccess && (
-              <p className="text-sm flex gap-2 items-center">
-                WETH: <span className="font-bold">{contracts?.weth}</span>
-              </p>
-            )}
+            <table className="text-sm">
+              <tbody>
+                <tr>
+                  <td>Account:</td>
+                  <td className="font-semibold">{displayConnection}</td>
+                </tr>
+                <tr>
+                  <td>Balance:</td>
+                  <td className="font-semibold">{displayBalance}</td>
+                </tr>
+                {!isSuccess && (
+                  <tr>
+                    <td>Loading contracts...</td>
+                  </tr>
+                )}
+                {isSuccess && (
+                  <>
+                    <tr>
+                      <td>WETH:</td>
+                      <td className="font-semibold">{contracts?.weth}</td>
+                    </tr>
+                    <tr>
+                      <td>Permit2:</td>
+                      <td className="font-semibold">{contracts?.permit2}</td>
+                    </tr>
+                  </>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
         <div className="flex flex-col gap-4">
@@ -116,7 +147,10 @@ function App() {
           <h2 className="text-xl font-bold">
             Step 2: Approve WETH for Permit2 contract
           </h2>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-lg w-fit text-sm">
+          <button
+            onClick={() => approve()}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg w-fit text-sm"
+          >
             Approve WETH
           </button>
         </div>
