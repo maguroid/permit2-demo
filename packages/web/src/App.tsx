@@ -11,11 +11,13 @@ import { injected } from "wagmi/connectors";
 import { useDemoContracts } from "./hooks/use-demo-contracts";
 import { useMint } from "./hooks/use-mint";
 import { useEffect } from "react";
-import { Address, formatEther } from "viem";
+import { Address, formatEther, parseEther } from "viem";
 import { Hex } from "viem";
 import { toast } from "sonner";
 import { useErc20Balance } from "./hooks/use-erc20-balance";
 import { useErc20Approve } from "./hooks/use-erc20-approve";
+import { useErc20Permit2TransferFrom } from "./hooks/use-erc20-permit2-transfer";
+import { makeAccount } from "./util/make-account";
 
 function ConnectButton() {
   const { disconnect } = useDisconnect();
@@ -45,6 +47,8 @@ function ConnectButton() {
   );
 }
 
+const alice = makeAccount("alice");
+
 function App() {
   const client = useClient();
   const { address } = useAccount();
@@ -54,6 +58,8 @@ function App() {
     contracts?.weth,
     address
   );
+  const { data: aliceWethBalance, refetch: refetchAliceWethBalance } =
+    useErc20Balance(contracts?.weth, alice.address);
   const { mutate: mint } = useMint(contracts?.weth, address, {
     onSuccess: () => {
       toast.success("Minted WETH");
@@ -68,6 +74,25 @@ function App() {
     {
       onSuccess: () => {
         toast.success("Approved WETH");
+      },
+    }
+  );
+  const { mutate: transfer } = useErc20Permit2TransferFrom(
+    {
+      permit2Address: contracts?.permit2,
+      owner: address,
+      to: alice.address,
+      permit: {
+        token: contracts?.weth,
+        amount: parseEther("50"),
+        deadline: BigInt(Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30),
+      },
+    },
+    {
+      onSuccess: () => {
+        toast.success("Transferred WETH");
+        refetchWethBalance();
+        refetchAliceWethBalance();
       },
     }
   );
@@ -158,7 +183,10 @@ function App() {
         <div className="flex flex-col gap-4">
           <h2 className="text-xl font-bold">Step 3: Transfer WETH to alice</h2>
           <div className="flex items-center gap-4">
-            <button className="bg-blue-500 text-white px-4 py-2 rounded-lg w-fit text-sm">
+            <button
+              onClick={() => transfer()}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg w-fit text-sm"
+            >
               Transfer WETH
             </button>
             <div className="flex gap-4">
@@ -172,7 +200,7 @@ function App() {
               <div className="flex gap-2 items-center text-slate-500">
                 <h3>Alice's WETH:</h3>
                 <div className="flex gap-1 items-baseline">
-                  <p>0</p>
+                  <p>{aliceWethBalance ? formatEther(aliceWethBalance) : 0}</p>
                   <p className="text-sm">WETH</p>
                 </div>
               </div>

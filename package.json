@@ -6,8 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "anvil": "turbo watch anvil",
-    "dev": "turbo watch anvil dev"
+    "dev": "turbo anvil dev"
   },
   "devDependencies": {
     "@types/bun": "latest",

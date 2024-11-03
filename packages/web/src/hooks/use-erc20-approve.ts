@@ -1,5 +1,5 @@
 import { Address, erc20Abi, maxUint256, zeroAddress } from "viem";
-import { writeContract } from "wagmi/actions";
+import { waitForTransactionReceipt, writeContract } from "wagmi/actions";
 import { Config, useConfig } from "wagmi";
 import { useMutation, UseMutationOptions } from "@tanstack/react-query";
 
@@ -9,12 +9,14 @@ async function approve(
   spender: Address,
   amount: bigint
 ) {
-  await writeContract(config, {
+  const tx = await writeContract(config, {
     address: token,
     abi: erc20Abi,
     functionName: "approve",
     args: [spender, amount],
   });
+
+  await waitForTransactionReceipt(config, { hash: tx });
 }
 
 export function useErc20Approve(

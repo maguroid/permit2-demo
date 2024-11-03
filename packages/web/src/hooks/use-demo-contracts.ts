@@ -1,5 +1,5 @@
-import wethAbi from "../../abi/weth.json";
-import permit2Abi from "../../abi/permit2.json";
+import { wethAbi } from "../../abi/weth";
+import { permit2Abi } from "../../abi/permit2";
 import { privateKeyToAccount } from "viem/accounts";
 import { deployContract, getTransactionReceipt } from "wagmi/actions";
 import { config } from "../../wagmi.config";
