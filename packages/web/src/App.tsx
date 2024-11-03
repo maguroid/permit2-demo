@@ -51,7 +51,7 @@ const alice = makeAccount("alice");
 
 function App() {
   const client = useClient();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const { data: balance } = useBalance({ address });
   const { data: contracts, isSuccess } = useDemoContracts();
   const { data: wethBalance, refetch: refetchWethBalance } = useErc20Balance(
@@ -106,15 +106,17 @@ function App() {
   const displayBalance = balance ? `${balance.value} ${balance.symbol}` : "0";
 
   useEffect(() => {
-    client?.request<{
-      method: "anvil_setBalance";
-      params: [Address, Hex];
-      ReturnType: Hex;
-    }>({
-      method: "anvil_setBalance",
-      params: [address, "0x1000000000000000000000000"],
-    });
-  }, [client, address]);
+    if (isConnected) {
+      client?.request<{
+        method: "anvil_setBalance";
+        params: [Address, Hex];
+        ReturnType: Hex;
+      }>({
+        method: "anvil_setBalance",
+        params: [address, "0x1000000000000000000000000"],
+      });
+    }
+  }, [client, address, isConnected]);
 
   return (
     <div className="px-32 py-10">
@@ -156,6 +158,22 @@ function App() {
                 )}
               </tbody>
             </table>
+          </div>
+          <div className="bg-yellow-100 p-4 rounded-lg text-sm font-light">
+            <p>
+              If the transaction remains pending, you might want to try
+              resetting the account's nonce.
+            </p>
+            <p>
+              Discover more about it{" "}
+              <a
+                href="https://support.metamask.io/managing-my-wallet/resetting-deleting-and-restoring/how-to-clear-your-account-activity-reset-account/"
+                target="_blank"
+                className="text-blue-500"
+              >
+                here
+              </a>
+            </p>
           </div>
         </div>
         <div className="flex flex-col gap-4">
