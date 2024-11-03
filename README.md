@@ -1,15 +1,8 @@
-# permit2-playground
+# Permit2 Demo
 
-To install dependencies:
-
-```bash
-bun install
-```
-
-To run:
+## Getting Started
 
 ```bash
-bun run index.ts
+pnpm install
+pnpm run dev
 ```
-
-This project was created using `bun init` in bun v1.1.16. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
